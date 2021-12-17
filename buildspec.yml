@@ -24,5 +24,8 @@ phases:
       - echo Writing image definition file...
       - printf '[{"name":"focalboard","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json
+    
+batch:
+  fast-fail: false
 
 
