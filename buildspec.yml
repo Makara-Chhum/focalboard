@@ -1,0 +1,27 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login-password --region $AWS_DEFAULT_REGION --no-include-email)
+      - REPOSITORY_URL=public.ecr.aws/l2a1c6n8/focalboard
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVE_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | aw -F":" '{print $2)')
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...          
+      - docker build -t $IMAGE_REPO_NAME:latest .
+      - docker tag $REPOSITORY_URL:latest $REPOSITORY_URL:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push $REPOSITORY_URL:latest 
+      - docker push $REPOSITORY_URL:$IMAGE_TAG
+      - echo Writing image definition file...
+      - print '[{"name":"focalboard","imageUri":"%s"}]' $REPOSITORY_URL:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
+  artifacts:
+    files:imagedefinitions.json
