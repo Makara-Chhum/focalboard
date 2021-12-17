@@ -8,7 +8,7 @@ phases:
       - aws ecr get-login --no-include-email --region ap-southeast-1 | sh
       - REPOSITORY_URL=public.ecr.aws/l2a1c6n8/focalboard
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVE_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | aw -F":" '{print $2)')
+      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2)')
   build:
     commands:
       - echo Build started on `date`
