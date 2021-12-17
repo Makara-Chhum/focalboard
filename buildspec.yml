@@ -4,7 +4,7 @@ phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login-password --region $AWS_DEFAULT_REGION --no-include-email)
+      - $(aws ecr get-login-password --region ap-southeast-1 --no-include-email)
       - REPOSITORY_URL=public.ecr.aws/l2a1c6n8/focalboard
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVE_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | aw -F":" '{print $2)')
