@@ -23,5 +23,3 @@ phases:
       - echo Writing image definition file...
       - print '[{"name":"focalboard","imageUri":"%s"}]' $REPOSITORY_URL:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json
-  artifacts:
-    files:imagedefinitions.json
