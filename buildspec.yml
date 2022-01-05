@@ -1,30 +1,29 @@
 version: 0.2
-
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
       - aws --version
-      - aws ecr get-login --no-include-email --region ap-southeast-1 | sh
+      - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
       - REPOSITORY_URI=public.ecr.aws/y8c9k6o6/webapp
-      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVE_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - cd docker
-      - docker-compose up -d
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      - REPO_URI=public.ecr.aws/y8c9k6o6/webapp
+      - docker pull $REPO_URI:latest || true
+      - docker build --cache-from $REPO_URI:latest --tag $REPO_URI:latest --tag $REPO_URI:$IMAGE_TAG .
   post_build:
     commands:
       - echo Build completed on `date`
-      - echo Pushing the Docker image...
-      - docker-compose push $REPOSITORY_URI:latest 
-      - docker-compose push $REPOSITORY_URI:$IMAGE_TAG
-      - echo Writing image definition file...
-      - printf '[{"name":"focalboard","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-      - cat imagedefinitions.json
-
+      - echo Pushing the Docker images...
+      - REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      - docker push $REPO_URI:latest
+      - docker push $REPO_URI:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - printf '[{"name":"demo-app","imageUri":"%s"}]' "$REPO_URI:$IMAGE_TAG" | tee imagedefinitions.json
+artifacts:
+  files: imagedefinitions.json
 
 
